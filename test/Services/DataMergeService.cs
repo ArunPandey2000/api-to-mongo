@@ -18,10 +18,40 @@ namespace test.Services
             var endpoint1 = "https://arun-test.free.beeceptor.com";
             var endpoint2 = "https://arun-test.free.beeceptor.com";
 
+                var weeklyQuery = @"{
+        actor {
+            account(id: 468142) {
+                nrql(
+                    query: ""select count(*) from TransactionError where appName like 'Azure_PROD-Direct_US_Leo.Order.Lines-API' since monday until today FACET error.message limit 100""
+                ) {
+                    results
+                }
+            }
+            user {
+                name
+            }
+        }
+    }";
 
-            var weeklyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint1);
-            var monthlyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint2);
+                var monthlyQuery = @"
+            {
+        actor {
+            account(id: 468142) {
+                nrql(
+                    query: ""select count(*) from TransactionError where appName like 'Azure_PROD-Direct_US_Leo.Order.Lines-API' since 1 month ago until today FACET error.message limit 100""
+                ) {
+                    results
+                }
+            }
+            user {
+                name
+            }
+        }
+    }";
 
+            // Fetch data using GraphQL
+            var weeklyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint1, weeklyQuery);
+            var monthlyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint2, monthlyQuery);
 
             // Create a merged document with separate fields
             var mergedData = new MergedData
