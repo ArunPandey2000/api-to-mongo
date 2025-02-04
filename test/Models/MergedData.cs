@@ -13,5 +13,6 @@ namespace test.Models
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public ApiResponse Weekly { get; set; } = new();
         public ApiResponse Monthly { get; set; } = new();
+        public FrontEndErrorsResponse FrontendErrors { get; set; } = new();
     }
 }

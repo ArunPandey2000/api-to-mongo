@@ -1,4 +1,6 @@
-﻿using test.Models;
+﻿using System.Collections.Generic;
+using System.Transactions;
+using test.Models;
 
 namespace test.Services
 {
@@ -15,8 +17,7 @@ namespace test.Services
 
         public async Task SaveFetchedDataAsync()
         {
-            var endpoint1 = "https://arun-test.free.beeceptor.com";
-            var endpoint2 = "https://arun-test.free.beeceptor.com";
+            var endpoint = "https://arun-test.free.beeceptor.com";
 
                 var weeklyQuery = @"{
         actor {
@@ -49,15 +50,41 @@ namespace test.Services
         }
     }";
 
+            string feQuery = @"
+            {
+              actor {
+                account(id: 468142) {
+                  nrql(query: ""SELECT HashPath, Sample as 'Sample (Need attention and required fix)', CSPContext, LineNumber, ColumnNumber, SourceFile, UserName, BlockedURI, ViolatedDirective, Location 
+                          FROM Transaction 
+                          WHERE appName LIKE '%uat%' 
+                            AND HashPath LIKE '%task%' 
+                            AND appName LIKE '%security-csp%' 
+                            AND request.uri LIKE '%cspreport%' 
+                          LIMIT 10 
+                          SINCE 30 minutes ago"") {
+                    embeddedChartUrl
+                    nrql
+                    otherResult
+                    rawResponse
+                    staticChartUrl
+                    totalResult
+                  }
+                }
+              }
+            }";
+
+
             // Fetch data using GraphQL
-            var weeklyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint1, weeklyQuery);
-            var monthlyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint2, monthlyQuery);
+            var weeklyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint, weeklyQuery);
+            var monthlyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint, monthlyQuery);
+            var feErrorResponse = await _apiClient.GetDataAsync<FrontEndErrorsResponse>(endpoint, feQuery);
 
             // Create a merged document with separate fields
             var mergedData = new MergedData
             {
                 Weekly = weeklyResponse,
-                Monthly = monthlyResponse
+                Monthly = monthlyResponse,
+                FrontendErrors = feErrorResponse
             };
 
             // Save to MongoDB
