@@ -14,7 +14,7 @@ namespace test.Services
         }
 
         // Generic method to fetch data from any API
-        public async Task<T> GetDataAsync<T>(string endpoint, string query)
+        public async Task<T> GetDataAsync<T>(string endpoint, string query, string apiKey)
         {
             var requestBody = new
             {
@@ -24,7 +24,9 @@ namespace test.Services
             // Serialize the GraphQL query into JSON
             var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
 
-            // Send a POST request with the query
+            _httpClient.DefaultRequestHeaders.Add("API-Key", apiKey);
+
+            // Send a POST request with the query and headers
             var response = await _httpClient.PostAsync(endpoint, content);
             response.EnsureSuccessStatusCode();
 
@@ -32,5 +34,6 @@ namespace test.Services
             var json = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(json)!;
         }
+
     }
 }

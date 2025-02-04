@@ -17,6 +17,14 @@ namespace test.Services
 
         public async Task SaveFetchedDataAsync()
         {
+            string weeklyApiKey = Environment.GetEnvironmentVariable("WEEKLY_API_KEY");
+            string feErrorsApiKey = Environment.GetEnvironmentVariable("FE_ERRORS_API_KEY");
+
+            if (string.IsNullOrEmpty(weeklyApiKey) || string.IsNullOrEmpty(feErrorsApiKey))
+            {
+                throw new InvalidOperationException("API-Key is missing from the environment variables.");
+            }
+
             var endpoint = "https://arun-test.free.beeceptor.com";
 
                 var weeklyQuery = @"{
@@ -75,9 +83,9 @@ namespace test.Services
 
 
             // Fetch data using GraphQL
-            var weeklyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint, weeklyQuery);
-            var monthlyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint, monthlyQuery);
-            var feErrorResponse = await _apiClient.GetDataAsync<FrontEndErrorsResponse>(endpoint, feQuery);
+            var weeklyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint, weeklyQuery, weeklyApiKey);
+            var monthlyResponse = await _apiClient.GetDataAsync<ApiResponse>(endpoint, monthlyQuery, weeklyApiKey);
+            var feErrorResponse = await _apiClient.GetDataAsync<FrontEndErrorsResponse>(endpoint, feQuery, feErrorsApiKey);
 
             // Create a merged document with separate fields
             var mergedData = new MergedData
